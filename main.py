@@ -316,74 +316,84 @@ class App(customtkinter.CTk):
         self.actions_display.configure(text=text)
     
     def change_shortcut(self):
-        """Open dialog to change keyboard shortcut"""
-        self.shortcut_label.configure(text="Press key combination...")
-        self.shortcut_button.configure(state="disabled")
-        
-        # Create a simple toplevel window to capture keypress
+        """Open dialog to change keyboard shortcut using an input field"""
+        # Create a simple toplevel window with an input field
         dialog = customtkinter.CTkToplevel(self)
         dialog.title("Set Keyboard Shortcut")
-        dialog.geometry("300x150")
+        dialog.geometry("400x200")
         dialog.transient(self)
-        dialog.grab_set()
+        
+        # Ensure the dialog is created before attempting to grab focus
+        dialog.update()
         
         label = customtkinter.CTkLabel(
             dialog,
-            text="Press the keyboard shortcut you want to use.\nESC to cancel.",
+            text="Enter the keyboard shortcut (e.g., 'ctrl+c', 'alt+f4')",
             font=("Helvetica", 14),
             justify="center"
         )
         label.pack(pady=20)
         
-        result_label = customtkinter.CTkLabel(
+        # Input field for the shortcut
+        shortcut_entry = customtkinter.CTkEntry(
             dialog,
-            text="Waiting for input...",
-            font=("Helvetica", 12)
+            width=200,
+            placeholder_text="Enter shortcut (e.g., alt+f4)"
         )
-        result_label.pack(pady=10)
+        shortcut_entry.pack(pady=10)
+        shortcut_entry.insert(0, self.shortcut_label.cget("text"))
+        shortcut_entry.focus_set()
         
-        # Variable to store the shortcut
-        shortcut = []
+        # Instructions label
+        hint_label = customtkinter.CTkLabel(
+            dialog,
+            text="Use format like: ctrl+c, alt+f4, shift+tab, etc.",
+            font=("Helvetica", 12),
+            text_color="gray"
+        )
+        hint_label.pack(pady=(0, 10))
         
-        def on_key_event(e):
-            key = e.name
-            
-            if key == "escape":
-                dialog.destroy()
-                self.shortcut_label.configure(text=self.settings["keyboard_shortcut"])
-                self.shortcut_button.configure(state="normal")
-                return
-            
-            # Clear if a new key is pressed
-            if key not in ["ctrl", "alt", "shift"]:
-                shortcut.clear()
-            
-            # Add modifier keys
-            if e.event_type == "down":
-                if key not in shortcut:
-                    shortcut.append(key)
-                
-                # Display current combination
-                shortcut_text = "+".join(shortcut)
-                result_label.configure(text=shortcut_text)
-                
-                # If a non-modifier key is pressed, we're done
-                if key not in ["ctrl", "alt", "shift"] and len(shortcut) > 0:
-                    self.shortcut_label.configure(text=shortcut_text)
-                    self.shortcut_button.configure(state="normal")
-                    dialog.after(500, dialog.destroy)
+        # Buttons frame
+        buttons_frame = customtkinter.CTkFrame(dialog, fg_color="transparent")
+        buttons_frame.pack(pady=10)
         
-        # Hook keyboard events
-        keyboard.hook(on_key_event)
-        
-        # Unhook when dialog is closed
-        def on_close():
-            keyboard.unhook(on_key_event)
+        # Function to apply the shortcut
+        def apply_shortcut():
+            new_shortcut = shortcut_entry.get().strip()
+            if new_shortcut:
+                self.shortcut_label.configure(text=new_shortcut)
             dialog.destroy()
-            self.shortcut_button.configure(state="normal")
         
-        dialog.protocol("WM_DELETE_WINDOW", on_close)
-    
+        # Function to cancel
+        def cancel():
+            dialog.destroy()
+        
+        # Apply button
+        apply_button = customtkinter.CTkButton(
+            buttons_frame,
+            text="Apply",
+            command=apply_shortcut,
+            fg_color="green",
+            width=100
+        )
+        apply_button.pack(side="left", padx=10)
+        
+        # Cancel button
+        cancel_button = customtkinter.CTkButton(
+            buttons_frame,
+            text="Cancel",
+            command=cancel,
+            fg_color="gray",
+            width=100
+        )
+        cancel_button.pack(side="left", padx=10)
+        
+        # Allow Enter key to apply
+        shortcut_entry.bind("<Return>", lambda event: apply_shortcut())
+        
+        # Wait until the window is fully visible before grabbing focus
+        dialog.after(100, lambda: dialog.grab_set())
+
     def test_speech(self):
         """Test the speech function with current text"""
         try:
