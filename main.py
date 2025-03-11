@@ -322,18 +322,18 @@ class App(customtkinter.CTk):
         dialog.title("Set Keyboard Shortcut")
         dialog.geometry("400x200")
         dialog.transient(self)
-        
+
         # Ensure the dialog is created before attempting to grab focus
         dialog.update()
-        
+
         label = customtkinter.CTkLabel(
             dialog,
-            text="Enter the keyboard shortcut (e.g., 'ctrl+c', 'alt+f4')",
+            text="Enter the keyboard shortcut (e.g., 'ctrl+c', 'alt+f4', 'Win+q')",
             font=("Helvetica", 14),
             justify="center"
         )
         label.pack(pady=20)
-        
+
         # Input field for the shortcut
         shortcut_entry = customtkinter.CTkEntry(
             dialog,
@@ -343,7 +343,7 @@ class App(customtkinter.CTk):
         shortcut_entry.pack(pady=10)
         shortcut_entry.insert(0, self.shortcut_label.cget("text"))
         shortcut_entry.focus_set()
-        
+
         # Instructions label
         hint_label = customtkinter.CTkLabel(
             dialog,
@@ -352,22 +352,22 @@ class App(customtkinter.CTk):
             text_color="gray"
         )
         hint_label.pack(pady=(0, 10))
-        
+
         # Buttons frame
         buttons_frame = customtkinter.CTkFrame(dialog, fg_color="transparent")
         buttons_frame.pack(pady=10)
-        
+
         # Function to apply the shortcut
         def apply_shortcut():
             new_shortcut = shortcut_entry.get().strip()
             if new_shortcut:
                 self.shortcut_label.configure(text=new_shortcut)
             dialog.destroy()
-        
+
         # Function to cancel
         def cancel():
             dialog.destroy()
-        
+
         # Apply button
         apply_button = customtkinter.CTkButton(
             buttons_frame,
@@ -377,7 +377,7 @@ class App(customtkinter.CTk):
             width=100
         )
         apply_button.pack(side="left", padx=10)
-        
+
         # Cancel button
         cancel_button = customtkinter.CTkButton(
             buttons_frame,
@@ -387,10 +387,10 @@ class App(customtkinter.CTk):
             width=100
         )
         cancel_button.pack(side="left", padx=10)
-        
+
         # Allow Enter key to apply
         shortcut_entry.bind("<Return>", lambda event: apply_shortcut())
-        
+
         # Wait until the window is fully visible before grabbing focus
         dialog.after(100, lambda: dialog.grab_set())
 
